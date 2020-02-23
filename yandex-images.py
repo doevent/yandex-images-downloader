@@ -35,8 +35,7 @@ def get_extension_from_link(link, default='jpg'):
         return default
         
 print('Just enter a keywords:')
-keyword = input()  # считываем строку и кладём её в переменную name
-# keyword = "печка кирпичная"
+keyword = input()
 save_urls = time.strftime("%Y%m%d-%H%M%S") + ".txt"
 print('Enter the number of files (e.g. 300):')
 num_files = int(input())
