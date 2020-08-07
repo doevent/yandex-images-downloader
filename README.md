@@ -17,7 +17,8 @@ downloads .exe files
 ### Compatibilty
 * Python 3.4+
 * Selenium 3.4.0+
-* Chrome 80.1+
+* Chrome driver current test release 84.0.4147.30 (for other version: [download driver](https://chromedriver.chromium.org/))
+* Chrome current test release 84.0+ (chrome://settings/help)
 
 ## Authors
 
