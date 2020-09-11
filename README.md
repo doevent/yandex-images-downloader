@@ -9,10 +9,6 @@ A very simple example that downloads visible images and save list links images
 ```
 pip install selenium
 ```
-Windows:
-```
-downloads .exe files
-```
 
 ### Compatibilty
 * Python 3.4+
