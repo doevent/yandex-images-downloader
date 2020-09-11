@@ -1,45 +1,23 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import element_to_be_clickable
+from selenium.webdriver import ActionChains
 import time
+
 from urllib.request import urlretrieve
-from urllib.error import HTTPError
-from urllib.error import URLError
+from urllib.parse import urlparse
+
 import os
 import datetime
 
-def get_extension_from_link(link, default='jpg'):
-    splits = str(link).split('.')
-    if len(splits) == 0:
-        return default
-    ext = splits[-1].lower()
-    if ext == 'jpg' or ext == 'jpeg' or ext == 'jpe':
-        return 'jpg'
-    elif ext == 'gif':
-        return 'gif'
-    elif ext == 'png':
-        return 'png'
-    elif ext == 'ico':
-        return 'ico'
-    elif ext == 'jfif':
-        return 'jfif'
-    elif ext == 'bmp':
-        return 'bmp'
-    elif ext == 'svg':
-        return 'svg'
-    elif ext == 'webp':
-        return 'webp'
-    else:
-        return default
+
         
 print('Just enter a keywords:')
-keyword = input()
-save_urls = time.strftime("%Y%m%d-%H%M%S") + ".txt"
+keyword = input()  # считываем строку и кладём её в переменную name
 print('Enter the number of files (e.g. 300):')
-num_files = int(input())
+num_files = int(input(">> "))
 
+save_urls = time.strftime("%Y%m%d-%H%M%S") + ".txt"
 
 months={
 	1:"JAN",
@@ -69,37 +47,53 @@ if not os.path.exists(savedir):
 print (savedir)
 
 
-with webdriver.Chrome() as driver:
+options = webdriver.ChromeOptions() 
+options.add_argument("disable-infobars")
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option('useAutomationExtension', False)
+
+with webdriver.Chrome(options=options) as driver:
+        # no head browser
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+        Object.defineProperty(navigator, 'webdriver', {
+        get: () => undefined
+        })
+        """
+        })
+
+    driver.execute_cdp_cmd("Network.enable", {})
+    driver.execute_cdp_cmd("Network.setExtraHTTPHeaders", {"headers": {"User-Agent": "browser1"}})
+
+    
     driver.get("https://yandex.ru/images/")
     driver.implicitly_wait(10) # seconds
     time.sleep(10)
-    wait = WebDriverWait(driver, 10)
-    WebDriverWait(driver, 10)
+
     driver.find_element_by_class_name("input__control").send_keys(keyword + Keys.RETURN)
-    driver.find_element_by_class_name('serp-item__preview').click()
-   
-    file1 = open(save_urls, "a", encoding="utf-8") # open 2 write
+    time.sleep(4)
+    ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+    time.sleep(10)
+    driver.find_element_by_class_name('serp-item__link').click()
+    time.sleep(10)
+    file1 = open(f'{savedir}/{save_urls}', "a", encoding="utf-8") # open 2 write
     
     for links in range(0, num_files):
-        WebDriverWait(driver, 10)
-        link= driver.find_element_by_class_name('MMViewerButtons-OpenImageSizes').find_element_by_css_selector('a').get_attribute("href")
-
-        
-        
-       	timestr = time.strftime("%Y%m%d-%H%M%S")
-       	savefilename = "./" + savedir + "/img_" + timestr + "." + get_extension_from_link(link)
+        tpt = driver.find_element_by_class_name('MMButton-RightIcon').click()
+        time.sleep(4)
+        link = driver.find_element_by_css_selector('[class="MMViewerButtons-ImageSizesListItem"]').get_attribute("href")
+        print(link)
         try:
-            urlretrieve(link, savefilename)
-        except HTTPError:
-            print("\n Forbidden\n")
-        except URLError:
-            print("\nURLError\n")
-        except:
-            print("OthersError")
+            # print()
+            filept = f'{savedir}/{os.path.basename(urlparse(link).path)}'
+            urlretrieve(link, filept)
+            file1.write(link + '\n')
+        except Exception as e:
+            print(e)
         else:
             file1.write(link + '\n')
-            print(links ,": ", link)
-            print("\n" , savefilename , " image file saved")
+            print(links ," >>>  ", link)
+            print(links ," >>>  ",filept, " image file saved\n")
        	time.sleep(5)
         
         
